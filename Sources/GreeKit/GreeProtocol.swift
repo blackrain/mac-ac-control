@@ -4,8 +4,18 @@ import Foundation
 enum GreeProtocol {
     static let port: UInt16 = 7000
 
+    /// Address of the unit on its own setup access point (after a Wi‑Fi reset).
+    static let setupHost = "192.168.1.1"
+
     static func scanRequest() -> Data {
         Data(#"{"t":"scan"}"#.utf8)
+    }
+
+    /// Unencrypted request telling a unit in AP mode which Wi‑Fi network to join.
+    static func wlanRequest(ssid: String, password: String) -> Data {
+        let payload = ["psw": password, "ssid": ssid, "t": "wlan"]
+        // Encoding a [String: String] cannot fail.
+        return (try? JSONSerialization.data(withJSONObject: payload, options: [.sortedKeys])) ?? Data()
     }
 
     /// Wraps an inner payload into the encrypted `pack` envelope.

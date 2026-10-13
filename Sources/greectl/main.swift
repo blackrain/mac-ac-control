@@ -5,6 +5,7 @@ import GreeKit
 //   greectl scan [ip]
 //   greectl status [mac-suffix|ip]
 //   greectl set Pow=1 SetTem=24 [--device mac-suffix|ip]
+//   greectl wifi <ssid> <password> [ip]   (Mac joined to the AC's setup network)
 
 func pickDevice(_ selector: String?) async throws -> DeviceInfo {
     let isIP = selector?.contains(".") == true
@@ -63,8 +64,23 @@ do {
         try await device.set(values)
         print("OK")
 
+    case "wifi":
+        guard args.count >= 2 else {
+            print("usage: greectl wifi <ssid> <password> [ip]"); exit(2)
+        }
+        let host = args.count > 2 ? args[2] : GreeProvisioning.setupHost
+        if host == GreeProvisioning.setupHost {
+            if let unit = await GreeProvisioning.findSetupUnit() {
+                print("Found unit in setup mode: \(describe(unit))")
+            } else {
+                print("No unit answered at \(host); sending anyway.")
+            }
+        }
+        try await GreeProvisioning.sendWiFi(ssid: args[0], password: args[1], host: host)
+        print("Sent. Rejoin your network and run `greectl scan`.")
+
     default:
-        print("usage: greectl scan [ip] | status [mac-suffix|ip] | set Col=Val ... [--device mac-suffix|ip]")
+        print("usage: greectl scan [ip] | status [mac-suffix|ip] | set Col=Val ... [--device mac-suffix|ip] | wifi <ssid> <password> [ip]")
         exit(2)
     }
 } catch {

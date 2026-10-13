@@ -4,6 +4,7 @@ import SwiftUI
 struct SettingsView: View {
     @Bindable var model: ACViewModel
     @Binding var isPresented: Bool
+    @Binding var showWiFiSetup: Bool
     @State private var manualIP = ""
 
     var body: some View {
@@ -48,6 +49,9 @@ struct SettingsView: View {
                 Button("Connect", action: connectManual)
                     .disabled(manualIP.isEmpty)
             }
+
+            Button("Set up a new AC…") { showWiFiSetup = true }
+                .help("Connect a new or reset unit to your Wi‑Fi without the Gree+ app")
 
             Toggle("Launch at login", isOn: $model.launchAtLogin)
 

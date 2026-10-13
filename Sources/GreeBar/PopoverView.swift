@@ -4,6 +4,7 @@ import SwiftUI
 struct PopoverView: View {
     @Bindable var model: ACViewModel
     @State private var showSettings = false
+    @State private var showWiFiSetup = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
@@ -12,23 +13,27 @@ struct PopoverView: View {
             // All pages stay in the layout so the panel never changes height:
             // MenuBarExtra windows mis-position themselves when their content resizes.
             ZStack(alignment: .topLeading) {
-                page(visible: !showSettings && model.info != nil) {
+                page(visible: !showSettings && !showWiFiSetup && model.info != nil) {
                     VStack(alignment: .leading, spacing: 14) {
                         controls
                         ExtrasView(model: model)
                     }
                 }
-                page(visible: !showSettings && model.info == nil) {
+                page(visible: !showSettings && !showWiFiSetup && model.info == nil) {
                     ContentUnavailableView {
                         Label("No AC selected", systemImage: "air.conditioner.horizontal")
                     } description: {
                         Text(statusText)
                     } actions: {
                         Button("Set up…") { showSettings = true }
+                        Button("Set up a new AC…") { showWiFiSetup = true }
                     }
                 }
-                page(visible: showSettings) {
-                    SettingsView(model: model, isPresented: $showSettings)
+                page(visible: showSettings && !showWiFiSetup) {
+                    SettingsView(model: model, isPresented: $showSettings, showWiFiSetup: $showWiFiSetup)
+                }
+                page(visible: showWiFiSetup) {
+                    WiFiSetupView(model: model, isPresented: $showWiFiSetup)
                 }
             }
             Divider()
@@ -111,7 +116,7 @@ struct PopoverView: View {
             }
             Button { Task { await model.refresh() } } label: { Image(systemName: "arrow.clockwise") }
                 .help("Refresh")
-            Button { showSettings.toggle() } label: { Image(systemName: "gearshape") }
+            Button { showSettings.toggle(); showWiFiSetup = false } label: { Image(systemName: "gearshape") }
                 .help("Settings")
             Button { NSApplication.shared.terminate(nil) } label: { Image(systemName: "power") }
                 .help("Quit")

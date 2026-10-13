@@ -57,3 +57,11 @@ func cryptoRoundTrip(cipher: GreeCipher) throws {
     #expect(DeviceState.normalizeRoomTemp(25) == 25)
     #expect(DeviceState(cols: ["TemSen"], dat: [0]).roomTemp == nil)
 }
+
+@Test func wlanRequestEscapesCredentials() throws {
+    let data = GreeProtocol.wlanRequest(ssid: #"My "Net""#, password: #"p\w"#)
+    let obj = try GreeProtocol.jsonObject(data)
+    #expect(obj["t"] as? String == "wlan")
+    #expect(obj["ssid"] as? String == #"My "Net""#)
+    #expect(obj["psw"] as? String == #"p\w"#)
+}
